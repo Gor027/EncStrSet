@@ -1,3 +1,0 @@
-C:/Users/Maks/Documents/C++/jnp1/zadanie2/EncStrSet/build/CMakeFiles/EncStrSet.dir
-C:/Users/Maks/Documents/C++/jnp1/zadanie2/EncStrSet/build/CMakeFiles/edit_cache.dir
-C:/Users/Maks/Documents/C++/jnp1/zadanie2/EncStrSet/build/CMakeFiles/rebuild_cache.dir
