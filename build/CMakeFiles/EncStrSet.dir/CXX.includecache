@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Maks/Documents/C++/jnp1/zadanie2/EncStrSet/encstrset.h
+cstddef
+-
+iostream
+-
+stddef.h
+-
+stdbool.h
+-
+
+C:/Users/Maks/Documents/C++/jnp1/zadanie2/EncStrSet/encstrset_test2.cpp
+encstrset.h
+C:/Users/Maks/Documents/C++/jnp1/zadanie2/EncStrSet/encstrset.h
+cassert
+-
+

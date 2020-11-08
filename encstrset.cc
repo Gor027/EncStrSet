@@ -17,10 +17,14 @@ const bool debug = true;
 
 #define STRING_OR_NULL(x) "\"" << (x == nullptr ? "NULL" : x) << "\""
 
-#define HEX_CIPHER(x)                                             \
-    for (auto oneChar : x)                                        \
-    {                                                             \
-        cerr << hex << setw(2) << setfill('0') << oneChar << " "; \
+#define HEX_CIPHER(x)                                        \
+    for (size_t i = 0; i < x.length(); i++)                  \
+    {                                                        \
+        cerr << hex << setw(2) << setfill('0') << (int)x[i]; \
+        if (i != x.length() - 1)                             \
+        {                                                    \
+            cerr << " ";                                     \
+        }                                                    \
     }
 
 #define DEBUG_WITH_CYPHER(x, cypher, y) \
@@ -41,7 +45,8 @@ const bool debug = true;
             cerr << __func__ << x << "\n"; \
     } while (0)
 
-namespace {
+namespace
+{
     const bool active = true;
     const bool notActive = false;
     using StrSet = unordered_set<string>;
@@ -50,22 +55,28 @@ namespace {
 
     Sets allSets;
 
-    bool isActive(unsigned long id) {
+    bool isActive(unsigned long id)
+    {
         return allSets[id].second;
     }
 
-    bool setExist(unsigned long id) {
-        return ((unsigned long) allSets.size() > id && isActive(id));
+    bool setExist(unsigned long id)
+    {
+        return ((unsigned long)allSets.size() > id && isActive(id));
     }
 
-    void deactivateSet(unsigned long id) {
+    void deactivateSet(unsigned long id)
+    {
         allSets[id].second = notActive;
     }
 
-    string encode(const char *value, const char *key) {
+    string encode(const char *value, const char *key)
+    {
         string encodeResult = value;
-        if (key != nullptr && strlen(key) > 0) {
-            for (size_t i = 0; i < encodeResult.length(); i++) {
+        if (key != nullptr && strlen(key) > 0)
+        {
+            for (size_t i = 0; i < encodeResult.length(); i++)
+            {
                 encodeResult[i] ^= key[i % strlen(key)];
             }
         }
@@ -73,115 +84,171 @@ namespace {
     }
 } // namespace
 
-namespace jnp1 {
-    unsigned long encstrset_new() {
+namespace jnp1
+{
+    unsigned long encstrset_new()
+    {
         DEBUG("()");
         StrSet newSet;
         allSets.emplace_back(newSet, active);
-        DEBUG(": set #" << (unsigned long) allSets.size() - 1 << " created");
-        return (unsigned long) allSets.size() - 1;
+        DEBUG(": set #" << (unsigned long)allSets.size() - 1 << " created");
+        return (unsigned long)allSets.size() - 1;
     }
 
-    void encstrset_clear(unsigned long id) {
+    void encstrset_clear(unsigned long id)
+    {
         DEBUG("(" << id << ")");
-        if (setExist(id)) {
+        if (setExist(id))
+        {
             allSets[id].first.clear();
             DEBUG(": set #" << id << " cleared");
-        } else {
+        }
+        else
+        {
             DEBUG(SET_NOT_EXIST(id));
         }
     }
 
-    void encstrset_delete(unsigned long id) {
+    void encstrset_delete(unsigned long id)
+    {
         DEBUG("(" << id << ")");
-        if (setExist(id)) {
-            encstrset_clear(id);
+        if (setExist(id))
+        {
+            allSets[id].first.clear();
             deactivateSet(id);
             DEBUG(": set #" << id << " deleted");
-        } else {
+        }
+        else
+        {
             DEBUG(SET_NOT_EXIST(id));
         }
     }
 
-    size_t encstrset_size(unsigned long id) {
+    size_t encstrset_size(unsigned long id)
+    {
         DEBUG("(" << id << ")");
-        if (setExist(id)) {
+        if (setExist(id))
+        {
             DEBUG(": set #" << id << " contains " << allSets[id].first.size() << " element(s)");
             return allSets[id].first.size();
-        } else {
-            DEBUG(SET_NOT_EXIST(0));
+        }
+        else
+        {
+            DEBUG(SET_NOT_EXIST(id));
             return 0;
         }
     }
 
-    bool encstrset_insert(unsigned long id, const char *value, const char *key) {
+    bool encstrset_insert(unsigned long id, const char *value, const char *key)
+    {
         DEBUG("(" << id << ", " << STRING_OR_NULL(value) << ", " << STRING_OR_NULL(key) << ")");
-        if (value == nullptr) {
+        if (value == nullptr)
+        {
             DEBUG(": invalid value (NULL)");
             return false;
         }
-        if (setExist(id)) {
+        if (setExist(id))
+        {
             string encodedValue = encode(value, key);
-            if (allSets[id].first.find(encodedValue) == allSets[id].first.end()) {
+            if (allSets[id].first.find(encodedValue) == allSets[id].first.end())
+            {
                 allSets[id].first.insert(encodedValue);
                 DEBUG_WITH_CYPHER(":set #" << id << ", cypher \"", encodedValue, "\" inserted");
                 return true;
-            } else {
+            }
+            else
+            {
                 DEBUG_WITH_CYPHER(":set #" << id << ", cypher \"", encodedValue, "\" was already present");
             }
-        } else {
-            DEBUG(SET_NOT_EXIST(0));
+        }
+        else
+        {
+            DEBUG(SET_NOT_EXIST(id));
         }
 
         return false;
     }
 
-    bool encstrset_remove(unsigned long id, const char *value, const char *key) {
+    bool encstrset_remove(unsigned long id, const char *value, const char *key)
+    {
         DEBUG("(" << id << ", " << STRING_OR_NULL(value) << ", " << STRING_OR_NULL(key) << ")");
-        if (value == nullptr) {
+        if (value == nullptr)
+        {
             DEBUG(": invalid value (NULL)");
             return false;
         }
-        if (setExist(id)) {
+        if (setExist(id))
+        {
             string encodedValue = encode(value, key);
-            if (allSets[id].first.find(encodedValue) != allSets[id].first.end()) {
+            if (allSets[id].first.find(encodedValue) != allSets[id].first.end())
+            {
                 DEBUG_WITH_CYPHER(":set #" << id << ", cypher \"", encodedValue, "\" removed");
                 allSets[id].first.erase(encodedValue);
                 return true;
-            } else {
+            }
+            else
+            {
                 DEBUG_WITH_CYPHER(":set #" << id << ", cypher \"", encodedValue, "\" was not present");
             }
-        } else {
-            DEBUG(SET_NOT_EXIST(0));
+        }
+        else
+        {
+            DEBUG(SET_NOT_EXIST(id));
         }
 
         return false;
     }
 
-    bool encstrset_test(unsigned long id, const char *value, const char *key) {
-        if (setExist(id)) {
+    bool encstrset_test(unsigned long id, const char *value, const char *key)
+    {
+        DEBUG("(" << id << ", " << STRING_OR_NULL(value) << ", " << STRING_OR_NULL(key) << ")");
+        if (setExist(id))
+        {
             string encodedValue = encode(value, key);
-            if (allSets[id].first.find(encodedValue) != allSets[id].first.end()) {
+            if (allSets[id].first.find(encodedValue) != allSets[id].first.end())
+            {
                 DEBUG_WITH_CYPHER(":set #" << id << ", cypher \"", encodedValue, "\" is present");
                 return true;
-            } else {
+            }
+            else
+            {
                 DEBUG_WITH_CYPHER(":set #" << id << ", cypher \"", encodedValue, "\" is not present");
                 return false;
             }
         }
+        else
+        {
+            DEBUG(SET_NOT_EXIST(id));
+        }
         return false;
     }
 
-    void encstrset_copy(unsigned long src_id, unsigned long dst_id) {
-        if (setExist(src_id) && setExist(dst_id)) {
-            for (auto element : allSets[src_id].first) {
-                DEBUG_WITH_CYPHER(": cypher \"", element, "\" copied from set #" << src_id << " to set #" << dst_id);
-                if (allSets[dst_id].first.find(element) == allSets[dst_id].first.end()) {
+    void encstrset_copy(unsigned long src_id, unsigned long dst_id)
+    {
+        DEBUG("(" << src_id << ", " << dst_id << ")");
+        if (setExist(src_id) && setExist(dst_id))
+        {
+            for (auto element : allSets[src_id].first)
+            {
+
+                if (allSets[dst_id].first.find(element) == allSets[dst_id].first.end())
+                {
+                    DEBUG_WITH_CYPHER(": cypher \"", element, "\" copied from set #" << src_id << " to set #" << dst_id);
                     allSets[dst_id].first.insert(element);
-                } else {
+                }
+                else
+                {
                     DEBUG_WITH_CYPHER(": copied cypher \"", element, "\" was already present in set #" << dst_id);
                 }
             }
+        }
+        if (!setExist(src_id))
+        {
+            DEBUG(SET_NOT_EXIST(src_id));
+        }
+        if (!setExist(dst_id))
+        {
+            DEBUG(SET_NOT_EXIST(dst_id));
         }
     }
 } // namespace jnp1
