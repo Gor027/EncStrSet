@@ -17,14 +17,14 @@ const bool debug = true;
 
 #define STRING_OR_NULL(x) "\"" << (x == nullptr ? "NULL" : x) << "\""
 
-#define HEX_CIPHER(x)                                        \
-    for (size_t i = 0; i < x.length(); i++)                  \
-    {                                                        \
-        cerr << hex << setw(2) << setfill('0') << (int)x[i]; \
-        if (i != x.length() - 1)                             \
-        {                                                    \
-            cerr << " ";                                     \
-        }                                                    \
+#define HEX_CIPHER(x)                                                     \
+    for (size_t i = 0; i < x.length(); i++)                               \
+    {                                                                     \
+        cerr << hex << uppercase << setw(2) << setfill('0') << (int)x[i]; \
+        if (i != x.length() - 1)                                          \
+        {                                                                 \
+            cerr << " ";                                                  \
+        }                                                                 \
     }
 
 #define DEBUG_WITH_CYPHER(x, cypher, y) \
