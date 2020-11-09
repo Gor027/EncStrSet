@@ -15,7 +15,7 @@ const bool debug = true;
 
 #define SET_NOT_EXIST(x) ": set #" << x << " does not exist"
 
-#define STRING_OR_NULL(x) "\"" << (x == nullptr ? "NULL" : x) << "\""
+#define STRING_OR_NULL(x) (x == nullptr ? "NULL" : "\"" + string(x) + "\"")
 
 #define HEX_CIPHER(x)                                                     \
     for (size_t i = 0; i < x.length(); i++)                               \
