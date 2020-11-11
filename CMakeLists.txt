@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(
         EncStrSet
-#        encstrset_test1.c
-        encstrset_test2.cpp
+        encstrset_test1.c
+#        encstrset_test2.cpp
         encstrset.cc
         encstrset.h
 )

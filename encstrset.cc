@@ -3,15 +3,10 @@
 #include <vector>
 #include <cstring>
 #include <unordered_set>
+#include <unordered_map>
 #include <iomanip>
 
 using namespace std;
-
-#ifdef DNDEBUG
-const bool debug = false;
-#else
-const bool debug = true;
-#endif
 
 #define SET_NOT_EXIST(x) ": set #" << x << " does not exist"
 
@@ -47,27 +42,35 @@ const bool debug = true;
 
 namespace
 {
-    const bool active = true;
-    const bool notActive = false;
-    using StrSet = unordered_set<string>;
-    using Active = bool;
-    using Sets = vector<pair<StrSet, Active>>;
 
-    Sets allSets;
+#ifdef DNDEBUG
+    const bool debug = false;
+#else
+    const bool debug = true;
+#endif
 
-    bool isActive(unsigned long id)
+    using encodedString = string;
+    using SetNumber = unsigned long;
+    using StrSet = unordered_set<encodedString>;
+    using Sets = unordered_map<SetNumber, StrSet>;
+
+    const unsigned long startingSetNumber = 0;
+    unsigned long nextSetNumber = startingSetNumber;
+
+    Sets &allSets()
     {
-        return allSets[id].second;
+        static Sets *sets = new Sets();
+        return *sets;
     }
 
-    bool setExist(unsigned long id)
+    bool setExist(Sets::iterator setIterator)
     {
-        return ((unsigned long)allSets.size() > id && isActive(id));
+        return setIterator != allSets().end();
     }
 
-    void deactivateSet(unsigned long id)
+    StrSet &getSetReference(Sets::iterator setIterator)
     {
-        allSets[id].second = notActive;
+        return setIterator->second;
     }
 
     string encode(const char *value, const char *key)
@@ -90,17 +93,18 @@ namespace jnp1
     {
         DEBUG("()");
         StrSet newSet;
-        allSets.emplace_back(newSet, active);
-        DEBUG(": set #" << (unsigned long)allSets.size() - 1 << " created");
-        return (unsigned long)allSets.size() - 1;
+        allSets()[nextSetNumber] = newSet;
+        DEBUG(": set #" << nextSetNumber << " created");
+        return nextSetNumber++;
     }
 
     void encstrset_clear(unsigned long id)
     {
         DEBUG("(" << id << ")");
-        if (setExist(id))
+        auto setIterator = allSets().find(id);
+        if (setExist(setIterator))
         {
-            allSets[id].first.clear();
+            getSetReference(setIterator).clear();
             DEBUG(": set #" << id << " cleared");
         }
         else
@@ -112,10 +116,10 @@ namespace jnp1
     void encstrset_delete(unsigned long id)
     {
         DEBUG("(" << id << ")");
-        if (setExist(id))
+        auto setIterator = allSets().find(id);
+        if (setExist(setIterator))
         {
-            allSets[id].first.clear();
-            deactivateSet(id);
+            allSets().erase(setIterator);
             DEBUG(": set #" << id << " deleted");
         }
         else
@@ -127,10 +131,11 @@ namespace jnp1
     size_t encstrset_size(unsigned long id)
     {
         DEBUG("(" << id << ")");
-        if (setExist(id))
+        auto setIterator = allSets().find(id);
+        if (setExist(setIterator))
         {
-            DEBUG(": set #" << id << " contains " << allSets[id].first.size() << " element(s)");
-            return allSets[id].first.size();
+            DEBUG(": set #" << id << " contains " << getSetReference(setIterator).size() << " element(s)");
+            return getSetReference(setIterator).size();
         }
         else
         {
@@ -147,12 +152,14 @@ namespace jnp1
             DEBUG(": invalid value (NULL)");
             return false;
         }
-        if (setExist(id))
+        auto setIterator = allSets().find(id);
+        if (setExist(setIterator))
         {
             string encodedValue = encode(value, key);
-            if (allSets[id].first.find(encodedValue) == allSets[id].first.end())
+            if (getSetReference(setIterator).find(encodedValue) ==
+                getSetReference(setIterator).end())
             {
-                allSets[id].first.insert(encodedValue);
+                getSetReference(setIterator).insert(encodedValue);
                 DEBUG_WITH_CYPHER(":set #" << id << ", cypher \"", encodedValue, "\" inserted");
                 return true;
             }
@@ -177,13 +184,15 @@ namespace jnp1
             DEBUG(": invalid value (NULL)");
             return false;
         }
-        if (setExist(id))
+        auto setIterator = allSets().find(id);
+        if (setExist(setIterator))
         {
             string encodedValue = encode(value, key);
-            if (allSets[id].first.find(encodedValue) != allSets[id].first.end())
+            auto encodedValueIterator = getSetReference(setIterator).find(encodedValue);
+            if (encodedValueIterator != getSetReference(setIterator).end())
             {
                 DEBUG_WITH_CYPHER(":set #" << id << ", cypher \"", encodedValue, "\" removed");
-                allSets[id].first.erase(encodedValue);
+                getSetReference(setIterator).erase(encodedValueIterator);
                 return true;
             }
             else
@@ -202,10 +211,12 @@ namespace jnp1
     bool encstrset_test(unsigned long id, const char *value, const char *key)
     {
         DEBUG("(" << id << ", " << STRING_OR_NULL(value) << ", " << STRING_OR_NULL(key) << ")");
-        if (setExist(id))
+        auto setIterator = allSets().find(id);
+        if (setExist(setIterator))
         {
             string encodedValue = encode(value, key);
-            if (allSets[id].first.find(encodedValue) != allSets[id].first.end())
+            if (getSetReference(setIterator).find(encodedValue) !=
+                getSetReference(setIterator).end())
             {
                 DEBUG_WITH_CYPHER(":set #" << id << ", cypher \"", encodedValue, "\" is present");
                 return true;
@@ -226,15 +237,19 @@ namespace jnp1
     void encstrset_copy(unsigned long src_id, unsigned long dst_id)
     {
         DEBUG("(" << src_id << ", " << dst_id << ")");
-        if (setExist(src_id) && setExist(dst_id))
+        auto srcSetIterator = allSets().find(src_id);
+        auto dstSetIterator = allSets().find(dst_id);
+        if (setExist(srcSetIterator) && setExist(dstSetIterator))
         {
-            for (auto element : allSets[src_id].first)
+
+            for (auto element : getSetReference(srcSetIterator))
             {
 
-                if (allSets[dst_id].first.find(element) == allSets[dst_id].first.end())
+                if (getSetReference(dstSetIterator).find(element) ==
+                    getSetReference(dstSetIterator).end())
                 {
                     DEBUG_WITH_CYPHER(": cypher \"", element, "\" copied from set #" << src_id << " to set #" << dst_id);
-                    allSets[dst_id].first.insert(element);
+                    getSetReference(dstSetIterator).insert(element);
                 }
                 else
                 {
@@ -242,11 +257,11 @@ namespace jnp1
                 }
             }
         }
-        if (!setExist(src_id))
+        if (!setExist(srcSetIterator))
         {
             DEBUG(SET_NOT_EXIST(src_id));
         }
-        if (!setExist(dst_id))
+        if (!setExist(dstSetIterator))
         {
             DEBUG(SET_NOT_EXIST(dst_id));
         }
