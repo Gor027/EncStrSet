@@ -211,6 +211,13 @@ namespace jnp1
     bool encstrset_test(unsigned long id, const char *value, const char *key)
     {
         DEBUG("(" << id << ", " << STRING_OR_NULL(value) << ", " << STRING_OR_NULL(key) << ")");
+
+        if (value == nullptr)
+        {
+            DEBUG(": invalid value (NULL)");
+            return false;
+        }
+
         auto setIterator = allSets().find(id);
         if (setExist(setIterator))
         {
@@ -260,8 +267,7 @@ namespace jnp1
         if (!setExist(srcSetIterator))
         {
             DEBUG(SET_NOT_EXIST(src_id));
-        }
-        if (!setExist(dstSetIterator))
+        } else if (!setExist(dstSetIterator))
         {
             DEBUG(SET_NOT_EXIST(dst_id));
         }
