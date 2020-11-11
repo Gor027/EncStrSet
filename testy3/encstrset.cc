@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <iomanip>
+#include <cassert>
 
 using namespace std;
 
@@ -91,6 +92,7 @@ namespace jnp1
 {
     unsigned long encstrset_new()
     {
+        assert(nextSetNumber < numeric_limits<unsigned long>::max());
         DEBUG("()");
         StrSet newSet;
         allSets()[nextSetNumber] = newSet;
