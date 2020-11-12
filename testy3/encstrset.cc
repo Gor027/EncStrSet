@@ -59,8 +59,8 @@ namespace {
     unsigned long nextSetNumber = startingSetNumber;
 
     Sets &allSets() {
-        static Sets *sets = new Sets();
-        return *sets;
+        static Sets sets;
+        return sets;
     }
 
     bool setExist(Sets::iterator setIterator) {
