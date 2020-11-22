@@ -17,7 +17,8 @@ using namespace std;
     for (size_t i = 0; i < x.length(); i++)                               \
     {                                                                     \
         unsigned char casted = x[i];                                      \
-        cerr << hex << uppercase << setw(2) << setfill('0') << (unsigned int)casted; \
+        cerr << hex << uppercase << setw(2)                               \
+             << setfill('0') << (unsigned int)casted;                     \
         if (i != x.length() - 1)                                          \
         {                                                                 \
             cerr << " ";                                                  \

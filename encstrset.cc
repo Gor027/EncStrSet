@@ -45,7 +45,7 @@ using namespace std;
 
 namespace {
 
-#ifdef DNDEBUG
+#ifdef NDEBUG
     const bool debug = false;
 #else
     const bool debug = true;
